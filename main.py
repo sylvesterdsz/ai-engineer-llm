@@ -1,7 +1,7 @@
 from dotenv import load_dotenv
 import os
 from openai_client import get_openai_response
-from embedding import get_embedding, cosine_similarity
+from embedding import get_embedding, get_embeddings, cosine_similarity
 from openai import OpenAI
 from typing import List
 from openai_client import Message
@@ -47,20 +47,47 @@ Avoid very common words when suggesting new vocabulary; prefer slightly advanced
         sys.exit(1)
     client = OpenAI(api_key = api_key)
 
-    s1 = "She finished the assignment quickly."
-    s2 = "She completed the task fast."
-    #s3 = "I love programming in Python"
-    e1 = get_embedding(client, s1)
-    e2 = get_embedding(client, s2)
-    #e3 = get_embedding(client, s3)
+    items = [
+        "The dog is playing in the park",
+        "A puppy runs outside",
+        "I enjoy writing Python code",
+        "Software development is fun",
+        "The weather is sunny today",
+        "It might rain later this evening",
+        "Cats are sleeping on the couch"
+    ]
 
-    sim_12 = cosine_similarity(e1, e2)
-    #sim_13 = cosine_similarity(e1, e3)
-    #sim_23 = cosine_similarity(e2, e3)
+    query = "A dog running outdoors"
 
-    print(sim_12)
-    #print(sim_13)
-    #print(sim_23)
+    query_embedding = get_embedding(client, query)
+
+    item_embeddings = get_embeddings(client, items)
+
+    results = []
+
+    for item, emb in zip(items, item_embeddings):
+        score = cosine_similarity(query_embedding, emb)
+        results.append((item,score))
+
+    results.sort(key=lambda x: x[1], reverse=True)
+
+    for item, score in results:
+        print(f"{score:.4f} - {item}")
+
+    # s1 = "She finished the assignment quickly."
+    # s2 = "She completed the task fast."
+    # s3 = "I love programming in Python"
+    # e1 = get_embedding(client, s1)
+    # e2 = get_embedding(client, s2)
+    # e3 = get_embedding(client, s3)
+
+    # sim_12 = cosine_similarity(e1, e2)
+    # sim_13 = cosine_similarity(e1, e3)
+    # sim_23 = cosine_similarity(e2, e3)
+
+    # print(sim_12)
+    # print(sim_13)
+    # print(sim_23)
 
 
 
